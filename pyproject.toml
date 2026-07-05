@@ -1,0 +1,11 @@
+[project]
+name = "flowers_gnn"
+version = "0.0.1"
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["flowers_gnn*"]

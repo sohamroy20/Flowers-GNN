@@ -1,0 +1,33 @@
+cat > .gitignore << 'EOF'
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# Data — only the top-level data folder
+/data/
+
+# Large binary artifacts
+*.tfrecord
+*.pt
+*.pth
+*.tar
+*.gif
+scripts/*.png
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Experiments
+outputs/
+runs/
+wandb/
+checkpoints/
+EOF
