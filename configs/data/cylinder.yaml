@@ -1,0 +1,24 @@
+# CylinderFlow dataset config
+
+name: cylinder
+root: data/cylinder_flow
+norm_stats_path: data/cylinder_flow/torch/norm_stats.pt
+
+# Loader
+batch_size: 4
+num_workers: 2
+
+# In-memory loading (True for valid/test, False for train)
+train_in_memory: False
+valid_in_memory: True
+test_in_memory: True
+
+# Optional trajectory limits (null = use all)
+max_train_trajectories: null
+max_valid_trajectories: null
+max_test_trajectories: null
+
+# Training noise (MGN's trick): applied to input velocity, NORMAL nodes only.
+# std in *physical* velocity units. Set to 0.0 to disable.
+train_noise_std: 0.02
+train_noise_gamma: 1.0  # 1.0 = target left clean (MGN's default for cfd)

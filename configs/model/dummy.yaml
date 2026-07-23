@@ -1,0 +1,8 @@
+# Dummy model: returns zeros. Used to smoke-test the pipeline end-to-end.
+
+name: dummy
+
+net:
+  _target_: flowers_gnn.models.dummy.DummyModel
+
+# No hyperparameters needed for this one.

@@ -1,0 +1,21 @@
+# Top-level config. Defaults chained together via Hydra's composition.
+# Override at CLI: python train.py model=mgn data=cylinder train=default
+
+defaults:
+  - data: cylinder
+  - model: dummy
+  - train: default
+  - _self_
+
+# Experiment metadata
+experiment:
+  name: ${model.name}_${data.name}
+  seed: 42
+  project: flowers-gnn
+  wandb_mode: online   # online | offline | disabled
+
+# Device selection: cuda | mps | cpu | auto
+device: auto
+
+# Where checkpoints and rollout outputs go
+output_dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
