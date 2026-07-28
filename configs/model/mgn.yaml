@@ -1,0 +1,8 @@
+# MeshGraphNets (Pfaff et al. 2021), reimplemented in PyTorch.
+
+name: mgn
+
+net:
+  _target_: flowers_gnn.models.mgn.MGN
+  latent_size: 128
+  num_mp_steps: 15

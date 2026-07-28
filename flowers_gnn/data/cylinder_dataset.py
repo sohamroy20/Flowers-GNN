@@ -102,7 +102,11 @@ class CylinderFlowDataset(Dataset):
         self._traj_static: List[dict] = []
         self._traj_velocity: List[Optional[torch.Tensor]] = []
 
-        for p in self.traj_paths:
+        from tqdm import tqdm
+        for p in tqdm(self.traj_paths,
+                      desc=f"loading {split} ({'in-memory' if in_memory else 'metadata-only'})",
+                      leave=False):
+
             blob = torch.load(p, weights_only=True)
             mesh_pos = blob["mesh_pos"][0]            # (N, 2)
             cells = blob["cells"][0].long()           # (M, 3)

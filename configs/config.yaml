@@ -7,6 +7,8 @@ defaults:
   - train: default
   - _self_
 
+resume_from: null   # path to a checkpoint .pt to resume from; null for fresh run
+
 # Experiment metadata
 experiment:
   name: ${model.name}_${data.name}

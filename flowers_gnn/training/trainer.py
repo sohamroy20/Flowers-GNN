@@ -127,8 +127,19 @@ class Trainer:
         )
 
         # Bookkeeping
+        #self.best_val_loss = float("inf")
+        #self.checkpoint_paths: List[Path] = []
         self.best_val_loss = float("inf")
         self.checkpoint_paths: List[Path] = []
+        self.start_epoch = 1
+        # Resume support
+        resume_path = cfg.get("resume_from", None)
+        if resume_path:
+            resume_path = Path(resume_path)
+            if not resume_path.exists():
+                raise FileNotFoundError(f"resume_from checkpoint not found: {resume_path}")
+            self._load_checkpoint(resume_path)
+
 
     # ---------- one step ----------
 
@@ -228,10 +239,24 @@ class Trainer:
                 self.checkpoint_paths.pop(0).unlink(missing_ok=True)
         return path
 
+    def _load_checkpoint(self, path: Path):
+        """Load model, optimizer, scheduler, and epoch counter from a checkpoint."""
+        print(f"Resuming from checkpoint: {path}")
+        ckpt = torch.load(path, weights_only=False, map_location=self.device)
+        self.model.load_state_dict(ckpt["model_state_dict"])
+        self.optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+        self.lr_scheduler.load_state_dict(ckpt["lr_scheduler_state_dict"])
+        self.start_epoch = ckpt["epoch"] + 1
+        self.best_val_loss = ckpt.get("val_loss", float("inf"))
+        print(f"  Resumed at epoch {ckpt['epoch']}, best_val_loss={self.best_val_loss:.6f}")
+        print(f"  Will continue from epoch {self.start_epoch}")
+
+
+
     # ---------- main loop ----------
 
     def train(self):
-        for epoch in range(1, self.cfg.train.epochs + 1):
+        for epoch in range(self.start_epoch, self.cfg.train.epochs + 1):
             train_loss = self.train_one_epoch(epoch)
             val_loss = self.validate(epoch)
 
