@@ -1,0 +1,10 @@
+# Native-mesh FLOWERS (thesis contribution).
+
+name: flowers_mesh
+
+net:
+  _target_: flowers_gnn.models.flowers_mesh.FlowersMesh
+  latent_dim: 192
+  num_blocks: 8
+  num_heads: 8
+  k_interp: 3
