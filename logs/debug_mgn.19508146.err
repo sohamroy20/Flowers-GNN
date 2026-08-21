@@ -1,0 +1,6 @@
+Error merging override hydra.job_logging=disabled
+Cannot assign str to Dict[str, Any]
+    full_key: hydra.job_logging
+    object_type=HydraConf
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.

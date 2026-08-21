@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "/scicore/soft/easybuild/apps/Python/3.11.5-GCCcore-13.2.0/lib/python3.11/logging/config.py", line 573, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scicore/soft/easybuild/apps/Python/3.11.5-GCCcore-13.2.0/lib/python3.11/logging/config.py", line 758, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/scicore/soft/easybuild/apps/Python/3.11.5-GCCcore-13.2.0/lib/python3.11/logging/__init__.py", line 1181, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/scicore/soft/easybuild/apps/Python/3.11.5-GCCcore-13.2.0/lib/python3.11/logging/__init__.py", line 1213, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/scicore/home/dokman0000/roy0003/thesis/Flowers-GNN/outputs/2026-08-04/14-46-00/train.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/scicore/home/dokman0000/roy0003/thesis/Flowers-GNN/.venv/lib/python3.11/site-packages/hydra/core/utils.py", line 46, in configure_log
+    logging.config.dictConfig(conf)
+  File "/scicore/soft/easybuild/apps/Python/3.11.5-GCCcore-13.2.0/lib/python3.11/logging/config.py", line 823, in dictConfig
+    dictConfigClass(config).configure()
+  File "/scicore/soft/easybuild/apps/Python/3.11.5-GCCcore-13.2.0/lib/python3.11/logging/config.py", line 580, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.

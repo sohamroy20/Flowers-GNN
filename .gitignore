@@ -30,4 +30,7 @@ outputs/
 runs/
 wandb/
 checkpoints/
-EOF
+EOFlogs/
+outputs_archive/
+outputs_smoke/
+*.save

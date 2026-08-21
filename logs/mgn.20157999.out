@@ -1,0 +1,109 @@
+Job started on Mon Aug 10 08:55:49 CEST 2026
+Running on node: sgd01
+Job ID: 20157999
+GPU info:
+Mon Aug 10 08:55:50 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.126.20             Driver Version: 580.126.20     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4090        On  |   00000000:01:00.0 Off |                  Off |
+| 32%   35C    P8             21W /  450W |      18MiB /  24564MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA GeForce RTX 4090        On  |   00000000:21:00.0 Off |                  Off |
+| 32%   35C    P8             30W /  450W |      17MiB /  24564MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   2  NVIDIA GeForce RTX 4090        On  |   00000000:81:00.0 Off |                  Off |
+| 32%   35C    P8             28W /  450W |      17MiB /  24564MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            7156      G   /usr/lib/xorg/Xorg                        6MiB |
+|    1   N/A  N/A            7156      G   /usr/lib/xorg/Xorg                        5MiB |
+|    2   N/A  N/A            7156      G   /usr/lib/xorg/Xorg                        5MiB |
++-----------------------------------------------------------------------------------------+
+CUDA available: True
+Device: NVIDIA GeForce RTX 4090
+Resuming from checkpoint: outputs/mgn_cylinder_20260806_192241/checkpoints/epoch_25.pt
+data:
+  name: cylinder
+  root: data/cylinder_flow
+  norm_stats_path: data/cylinder_flow/torch/norm_stats.pt
+  batch_size: 8
+  num_workers: 4
+  train_in_memory: true
+  valid_in_memory: true
+  test_in_memory: true
+  max_train_trajectories: null
+  max_valid_trajectories: null
+  max_test_trajectories: null
+  train_noise_std: 0.02
+  train_noise_gamma: 1.0
+model:
+  name: mgn
+  net:
+    _target_: flowers_gnn.models.mgn.MGN
+    latent_size: 128
+    num_mp_steps: 15
+train:
+  epochs: 30
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 0.0001
+    weight_decay: 0.0001
+  lr_scheduler:
+    warmup_epochs: 1
+    eta_min_factor: 0.1
+  rollout:
+    horizons:
+    - 1
+    - 10
+    - 20
+    - 50
+    - 100
+    - 200
+    max_trajectories: 32
+    eval_every_n_epochs: 1
+  checkpoint:
+    save_every_n_epochs: 1
+    keep_last: 3
+resume_from: outputs/mgn_cylinder_20260806_192241/checkpoints/epoch_25.pt
+experiment:
+  name: ${model.name}_${data.name}
+  seed: 42
+  project: flowers-gn
+  wandb_mode: online
+device: auto
+output_dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
+
+Using device: cuda
+Model mgn: 2,332,930 params
+Resuming from checkpoint: outputs/mgn_cylinder_20260806_192241/checkpoints/epoch_25.pt
+  Resumed at epoch 25, best_val_loss=0.004924
+  Will continue from epoch 26
+[epoch 26] train loss 0.002375  (6041.3s)
+[epoch 26] valid loss 0.004488
+[epoch 26] rollout: rmse_1_steps=0.0034, rmse_10_steps=0.0055, rmse_20_steps=0.0070, rmse_50_steps=0.0113, rmse_100_steps=0.0174, rmse_200_steps=0.0316
+[epoch 27] train loss 0.001953  (6036.2s)
+[epoch 27] valid loss 0.004111
+[epoch 27] rollout: rmse_1_steps=0.0016, rmse_10_steps=0.0038, rmse_20_steps=0.0055, rmse_50_steps=0.0097, rmse_100_steps=0.0155, rmse_200_steps=0.0276
+[epoch 28] train loss 0.001912  (6038.1s)
+[epoch 28] valid loss 0.004093
+[epoch 28] rollout: rmse_1_steps=0.0016, rmse_10_steps=0.0037, rmse_20_steps=0.0054, rmse_50_steps=0.0094, rmse_100_steps=0.0146, rmse_200_steps=0.0252
+[epoch 29] train loss 0.001887  (6038.1s)
+[epoch 29] valid loss 0.004100
+[epoch 29] rollout: rmse_1_steps=0.0016, rmse_10_steps=0.0038, rmse_20_steps=0.0054, rmse_50_steps=0.0093, rmse_100_steps=0.0145, rmse_200_steps=0.0267
+[epoch 30] train loss 0.001869  (6044.2s)
+[epoch 30] valid loss 0.004199
+[epoch 30] rollout: rmse_1_steps=0.0016, rmse_10_steps=0.0038, rmse_20_steps=0.0055, rmse_50_steps=0.0094, rmse_100_steps=0.0148, rmse_200_steps=0.0271
+Training complete.

@@ -1,0 +1,87 @@
+Thu Aug  6 23:19:38 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.126.20             Driver Version: 580.126.20     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H200                    On  |   00000000:C6:00.0 Off |                    0 |
+| N/A   32C    P0             76W /  700W |     116MiB / 143771MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            8172      G   /usr/lib/xorg/Xorg                      106MiB |
++-----------------------------------------------------------------------------------------+
+CUDA: True
+Device: NVIDIA H200
+data:
+  name: cylinder
+  root: data/cylinder_flow
+  norm_stats_path: data/cylinder_flow/torch/norm_stats.pt
+  batch_size: 8
+  num_workers: 4
+  train_in_memory: true
+  valid_in_memory: true
+  test_in_memory: true
+  max_train_trajectories: 50
+  max_valid_trajectories: 10
+  max_test_trajectories: null
+  train_noise_std: 0.02
+  train_noise_gamma: 1.0
+model:
+  name: flowers_mesh
+  net:
+    _target_: flowers_gnn.models.flowers_mesh.FlowersMesh
+    latent_dim: 256
+    num_blocks: 4
+    num_heads: 4
+    k_interp: 3
+train:
+  epochs: 3
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 0.0001
+    weight_decay: 0.0001
+  lr_scheduler:
+    warmup_epochs: 1
+    eta_min_factor: 0.1
+  rollout:
+    horizons:
+    - 1
+    - 10
+    - 20
+    - 50
+    - 100
+    - 200
+    max_trajectories: 5
+    eval_every_n_epochs: 1
+  checkpoint:
+    save_every_n_epochs: 1
+    keep_last: 3
+resume_from: null
+experiment:
+  name: ${model.name}_${data.name}
+  seed: 42
+  project: flowers-gn
+  wandb_mode: disabled
+device: auto
+output_dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
+
+Using device: cuda
+Model flowers_mesh: 2,120,226 params
+[epoch 1] train loss 0.120856  (465.9s)
+[epoch 1] valid loss 0.616105
+[epoch 1] rollout: rmse_1_steps=0.0418, rmse_10_steps=0.0892, rmse_20_steps=0.1054, rmse_50_steps=0.1200, rmse_100_steps=0.1292, rmse_200_steps=0.1500
+[epoch 2] train loss 0.088540  (465.1s)
+[epoch 2] valid loss 0.602255
+[epoch 2] rollout: rmse_1_steps=0.0403, rmse_10_steps=0.0813, rmse_20_steps=0.0939, rmse_50_steps=0.1075, rmse_100_steps=0.1215, rmse_200_steps=0.1569
+[epoch 3] train loss 0.069208  (479.3s)
+[epoch 3] valid loss 0.469157
+[epoch 3] rollout: rmse_1_steps=0.0357, rmse_10_steps=0.0682, rmse_20_steps=0.0822, rmse_50_steps=0.0979, rmse_100_steps=0.1098, rmse_200_steps=0.1340
+Training complete.

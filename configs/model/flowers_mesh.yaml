@@ -4,7 +4,7 @@ name: flowers_mesh
 
 net:
   _target_: flowers_gnn.models.flowers_mesh.FlowersMesh
-  latent_dim: 192
-  num_blocks: 8
-  num_heads: 8
+  latent_dim: 256
+  num_blocks: 4
+  num_heads: 32
   k_interp: 3

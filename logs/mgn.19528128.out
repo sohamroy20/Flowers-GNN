@@ -1,0 +1,119 @@
+Job started on Tue Aug  4 17:07:23 CEST 2026
+Running on node: sgd02
+Job ID: 19528128
+GPU info:
+Tue Aug  4 17:07:24 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.126.20             Driver Version: 580.126.20     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4090        On  |   00000000:21:00.0 Off |                  Off |
+| 31%   34C    P8             12W /  450W |      17MiB /  24564MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            7180      G   /usr/lib/xorg/Xorg                        5MiB |
++-----------------------------------------------------------------------------------------+
+CUDA available: True
+Device: NVIDIA GeForce RTX 4090
+Starting fresh run (no checkpoint found)
+data:
+  name: cylinder
+  root: data/cylinder_flow
+  norm_stats_path: data/cylinder_flow/torch/norm_stats.pt
+  batch_size: 8
+  num_workers: 4
+  train_in_memory: true
+  valid_in_memory: true
+  test_in_memory: true
+  max_train_trajectories: null
+  max_valid_trajectories: null
+  max_test_trajectories: null
+  train_noise_std: 0.02
+  train_noise_gamma: 1.0
+model:
+  name: mgn
+  net:
+    _target_: flowers_gnn.models.mgn.MGN
+    latent_size: 128
+    num_mp_steps: 15
+train:
+  epochs: 50
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 0.0001
+    weight_decay: 0.0001
+  lr_scheduler:
+    warmup_epochs: 1
+    eta_min_factor: 0.1
+  rollout:
+    horizons:
+    - 1
+    - 10
+    - 20
+    - 50
+    - 100
+    - 200
+    max_trajectories: 32
+    eval_every_n_epochs: 1
+  checkpoint:
+    save_every_n_epochs: 1
+    keep_last: 3
+resume_from: null
+experiment:
+  name: ${model.name}_${data.name}
+  seed: 42
+  project: flowers-gn
+  wandb_mode: online
+device: auto
+output_dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
+
+Using device: cuda
+Model mgn: 2,332,930 params
+[epoch 1] train loss 0.061787  (5761.6s)
+[epoch 1] valid loss 0.016337
+[epoch 1] rollout: rmse_1_steps=0.0085, rmse_10_steps=0.0168, rmse_20_steps=0.0218, rmse_50_steps=0.0344, rmse_100_steps=0.0565, rmse_200_steps=0.1064
+[epoch 2] train loss 0.016346  (5759.7s)
+[epoch 2] valid loss 0.019281
+[epoch 2] rollout: rmse_1_steps=0.0055, rmse_10_steps=0.0135, rmse_20_steps=0.0197, rmse_50_steps=0.0355, rmse_100_steps=0.0629, rmse_200_steps=0.0995
+[epoch 3] train loss 0.010824  (5757.1s)
+[epoch 3] valid loss 0.009285
+[epoch 3] rollout: rmse_1_steps=0.0042, rmse_10_steps=0.0088, rmse_20_steps=0.0125, rmse_50_steps=0.0225, rmse_100_steps=0.0360, rmse_200_steps=0.0581
+[epoch 4] train loss 0.008680  (5759.7s)
+[epoch 4] valid loss 0.008673
+[epoch 4] rollout: rmse_1_steps=0.0041, rmse_10_steps=0.0091, rmse_20_steps=0.0125, rmse_50_steps=0.0212, rmse_100_steps=0.0336, rmse_200_steps=0.0521
+[epoch 5] train loss 0.007291  (5758.0s)
+[epoch 5] valid loss 0.026199
+[epoch 5] rollout: rmse_1_steps=0.0071, rmse_10_steps=0.0142, rmse_20_steps=0.0198, rmse_50_steps=0.0339, rmse_100_steps=0.0514, rmse_200_steps=0.0802
+[epoch 6] train loss 0.006489  (5756.4s)
+[epoch 6] valid loss 0.006402
+[epoch 6] rollout: rmse_1_steps=0.0037, rmse_10_steps=0.0069, rmse_20_steps=0.0095, rmse_50_steps=0.0156, rmse_100_steps=0.0242, rmse_200_steps=0.0409
+[epoch 7] train loss 0.005726  (5757.4s)
+[epoch 7] valid loss 0.009699
+[epoch 7] rollout: rmse_1_steps=0.0111, rmse_10_steps=0.0117, rmse_20_steps=0.0140, rmse_50_steps=0.0221, rmse_100_steps=0.0337, rmse_200_steps=0.0562
+[epoch 8] train loss 0.005241  (5758.1s)
+[epoch 8] valid loss 0.007263
+[epoch 8] rollout: rmse_1_steps=0.0028, rmse_10_steps=0.0068, rmse_20_steps=0.0102, rmse_50_steps=0.0178, rmse_100_steps=0.0298, rmse_200_steps=0.0536
+[epoch 9] train loss 0.004800  (5757.1s)
+[epoch 9] valid loss 0.006487
+[epoch 9] rollout: rmse_1_steps=0.0035, rmse_10_steps=0.0074, rmse_20_steps=0.0105, rmse_50_steps=0.0182, rmse_100_steps=0.0286, rmse_200_steps=0.0470
+[epoch 10] train loss 0.004522  (5758.3s)
+[epoch 10] valid loss 0.006134
+[epoch 10] rollout: rmse_1_steps=0.0033, rmse_10_steps=0.0070, rmse_20_steps=0.0099, rmse_50_steps=0.0170, rmse_100_steps=0.0279, rmse_200_steps=0.0504
+[epoch 11] train loss 0.004253  (5765.1s)
+[epoch 11] valid loss 0.005177
+[epoch 11] rollout: rmse_1_steps=0.0025, rmse_10_steps=0.0058, rmse_20_steps=0.0086, rmse_50_steps=0.0146, rmse_100_steps=0.0234, rmse_200_steps=0.0452
+[epoch 12] train loss 0.004017  (5769.6s)
+[epoch 12] valid loss 0.008937
+[epoch 12] rollout: rmse_1_steps=0.0027, rmse_10_steps=0.0077, rmse_20_steps=0.0114, rmse_50_steps=0.0214, rmse_100_steps=0.0400, rmse_200_steps=0.0779
+[epoch 13] train loss 0.003825  (5769.1s)
+[epoch 13] valid loss 0.005504
+[epoch 13] rollout: rmse_1_steps=0.0023, rmse_10_steps=0.0056, rmse_20_steps=0.0080, rmse_50_steps=0.0138, rmse_100_steps=0.0220, rmse_200_steps=0.0362

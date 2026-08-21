@@ -1,0 +1,100 @@
+Job started on Fri Aug  7 00:09:02 CEST 2026
+Running on node: sgr04
+Job ID: 19798035
+GPU info:
+Fri Aug  7 00:09:03 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.126.20             Driver Version: 580.126.20     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H200                    On  |   00000000:C6:00.0 Off |                    0 |
+| N/A   35C    P0             77W /  700W |     116MiB / 143771MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            8172      G   /usr/lib/xorg/Xorg                      106MiB |
++-----------------------------------------------------------------------------------------+
+CUDA available: True
+Device: NVIDIA H200
+Starting fresh run (no checkpoint found)
+data:
+  name: cylinder
+  root: data/cylinder_flow
+  norm_stats_path: data/cylinder_flow/torch/norm_stats.pt
+  batch_size: 8
+  num_workers: 8
+  train_in_memory: true
+  valid_in_memory: true
+  test_in_memory: true
+  max_train_trajectories: null
+  max_valid_trajectories: null
+  max_test_trajectories: null
+  train_noise_std: 0.02
+  train_noise_gamma: 1.0
+model:
+  name: flowers_mesh
+  net:
+    _target_: flowers_gnn.models.flowers_mesh.FlowersMesh
+    latent_dim: 256
+    num_blocks: 4
+    num_heads: 4
+    k_interp: 3
+train:
+  epochs: 30
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 0.0001
+    weight_decay: 0.0001
+  lr_scheduler:
+    warmup_epochs: 1
+    eta_min_factor: 0.1
+  rollout:
+    horizons:
+    - 1
+    - 10
+    - 20
+    - 50
+    - 100
+    - 200
+    max_trajectories: 32
+    eval_every_n_epochs: 2
+  checkpoint:
+    save_every_n_epochs: 1
+    keep_last: 3
+resume_from: null
+experiment:
+  name: ${model.name}_${data.name}
+  seed: 42
+  project: flowers-gn
+  wandb_mode: online
+device: auto
+output_dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
+
+Using device: cuda
+Model flowers_mesh: 2,120,226 params
+[epoch 1] train loss 0.156922  (9773.6s)
+[epoch 1] valid loss 0.061486
+[epoch 2] train loss 0.066845  (9975.4s)
+[epoch 2] valid loss 0.054977
+[epoch 2] rollout: rmse_1_steps=0.0249, rmse_10_steps=0.0635, rmse_20_steps=0.0724, rmse_50_steps=0.0855, rmse_100_steps=0.1066, rmse_200_steps=0.1807
+[epoch 3] train loss 0.037160  (9833.8s)
+[epoch 3] valid loss 0.026719
+[epoch 4] train loss 0.022991  (9923.1s)
+[epoch 4] valid loss 0.015313
+[epoch 4] rollout: rmse_1_steps=0.0116, rmse_10_steps=0.0219, rmse_20_steps=0.0259, rmse_50_steps=0.0334, rmse_100_steps=0.0448, rmse_200_steps=0.0685
+[epoch 5] train loss 0.015009  (10079.1s)
+[epoch 5] valid loss 0.013035
+[epoch 6] train loss 0.012179  (10129.5s)
+[epoch 6] valid loss 0.013944
+[epoch 6] rollout: rmse_1_steps=0.0067, rmse_10_steps=0.0150, rmse_20_steps=0.0193, rmse_50_steps=0.0265, rmse_100_steps=0.0394, rmse_200_steps=0.0699
+[epoch 7] train loss 0.010733  (9974.3s)
+[epoch 7] valid loss 0.010960
+[epoch 8] train loss 0.009718  (9720.0s)

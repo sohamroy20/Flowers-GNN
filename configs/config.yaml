@@ -1,5 +1,5 @@
 # Top-level config. Defaults chained together via Hydra's composition.
-# Override at CLI: python train.py model=mgn data=cylinder train=default
+# Override at CLI:ython train.py model=mgn data=cylinder train=default
 
 defaults:
   - data: cylinder
@@ -13,7 +13,7 @@ resume_from: null   # path to a checkpoint .pt to resume from; null for fresh ru
 experiment:
   name: ${model.name}_${data.name}
   seed: 42
-  project: flowers-gnn
+  project: flowers-gn
   wandb_mode: online   # online | offline | disabled
 
 # Device selection: cuda | mps | cpu | auto
@@ -21,3 +21,17 @@ device: auto
 
 # Where checkpoints and rollout outputs go
 output_dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
+
+hydra:
+  run:
+    dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
+  output_subdir: null
+  job_logging:
+    version: 1
+    disable_existing_loggers: false
+    handlers:
+      console:
+        class: logging.StreamHandler
+        stream: ext://sys.stdout
+    root:
+      handlers: [console]

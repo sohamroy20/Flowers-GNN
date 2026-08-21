@@ -20,50 +20,53 @@ from torch_geometric.data import Batch
 
 def _knn_interpolate_multihead(
     v_heads: torch.Tensor,     # [N, H, head_dim]  per-head source values
-    pos: torch.Tensor,         # [N, 2]            source positions
+    pos: torch.Tensor,         # [N, 2]            source positions (shared across heads)
     flow: torch.Tensor,        # [N, H, 2]         per-head displacements
     batch_idx: torch.Tensor,   # [N]               graph id per node
     k: int = 3,
-    eps: float = 1e-6,
+    eps: float = 1e-6, #initially 1e-8
+    chunk_size: int = 65536, # 16384
 ) -> torch.Tensor:
-    """Multi-head kNN interpolation: vectorized over heads, looped over graphs.
+    """Vectorized multi-head kNN interpolation. Returns [N, H, head_dim].
 
-    Heads are vectorized (no Python loop over H), but distances are computed
-    within each graph only, so we never evaluate the cross-graph pairs that a
-    global [N*H, N] cdist would compute and then mask away.
-
-    Neighbour selection is discrete, so it runs under no_grad; the k selected
-    distances are then recomputed with an exact norm (torch.cdist uses the
-    expanded form and loses precision at mesh-scale separations).
+    All heads share one source set (the mesh nodes), so the distance matrix is
+    [N*H, N], not [N*H, N*H]. Neighbour *selection* is discrete and done under
+    no_grad; only the k selected distances are recomputed with grad, so the
+    autograd graph holds [N*H, k] instead of [N*H, N].
     """
     N, H, head_dim = v_heads.shape
-    out = torch.empty(N, H, head_dim, device=v_heads.device, dtype=v_heads.dtype)
+    device = pos.device
 
-    for b in torch.unique(batch_idx):
-        idx = (batch_idx == b).nonzero(as_tuple=True)[0]        # [n_b]
-        n_b = idx.shape[0]
+    queries = (pos.unsqueeze(1) + flow).reshape(N * H, 2)   # [N*H, 2]
+    batch_qry = batch_idx.repeat_interleave(H)              # [N*H]
 
-        pos_b = pos[idx]                                         # [n_b, 2]
-        flow_b = flow[idx]                                       # [n_b, H, 2]
-        v_b = v_heads[idx]                                       # [n_b, H, head_dim]
-
-        q = (pos_b.unsqueeze(1) + flow_b).reshape(n_b * H, 2)    # [n_b*H, 2]
-
+    knn_idx_chunks = []
+    for start in range(0, N * H, chunk_size):
+        end = min(start + chunk_size, N * H)
         with torch.no_grad():
-            d = torch.cdist(q, pos_b)                            # [n_b*H, n_b]
-            _, knn_idx = torch.topk(d, k=k, dim=-1, largest=False)
+            d = torch.cdist(queries[start:end], pos)        # [chunk, N]
+            cross = batch_qry[start:end].unsqueeze(1) != batch_idx.unsqueeze(0)
+            d = d.masked_fill(cross, float("inf"))
+            _, idx = torch.topk(d, k=k, dim=-1, largest=False)
+        knn_idx_chunks.append(idx)
+    knn_idx = torch.cat(knn_idx_chunks, dim=0)              # [N*H, k]
 
-        knn_dist = (q.unsqueeze(1) - pos_b[knn_idx]).norm(dim=-1)   # [n_b*H, k]
-        w = 1.0 / knn_dist.clamp_min(eps)
-        w = w / w.sum(dim=-1, keepdim=True)
+    # Recompute only the k selected distances, differentiably.
+    neighbour_pos = pos[knn_idx]                            # [N*H, k, 2]
+    knn_dist = (queries.unsqueeze(1) - neighbour_pos).norm(dim=-1)   # [N*H, k]
 
-        knn_idx_r = knn_idx.view(n_b, H, k)
-        head_ar = torch.arange(H, device=pos.device).view(1, H, 1).expand(n_b, H, k)
-        neighbour_vals = v_b[knn_idx_r, head_ar]                 # [n_b, H, k, head_dim]
+   # w = 1.0 / (knn_dist + eps)
+    #
+    w = 1.0 / knn_dist.clamp_min(eps)
+    #
+    w = w / w.sum(dim=-1, keepdim=True)                     # [N*H, k]
 
-        out[idx] = (w.view(n_b, H, k, 1) * neighbour_vals).sum(dim=2)
+    # Head-specific gather: query (i, h) samples v_heads[neighbour, h, :]
+    knn_idx_r = knn_idx.view(N, H, k)
+    head_ar = torch.arange(H, device=device).view(1, H, 1).expand(N, H, k)
+    neighbour_vals = v_heads[knn_idx_r, head_ar]            # [N, H, k, head_dim]
 
-    return out
+    return (w.view(N, H, k, 1) * neighbour_vals).sum(dim=2) # [N, H, head_dim]
 
 
 def _knn_interpolate(
@@ -112,7 +115,6 @@ def _knn_interpolate(
         out[idx] = (w.unsqueeze(-1) * x_neighbors).sum(dim=1)
 
     return out
-
 
 
 class MLP(nn.Module):

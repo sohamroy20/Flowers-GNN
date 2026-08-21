@@ -1,0 +1,109 @@
+Job started on Sun Aug  9 05:58:53 CEST 2026
+Running on node: sgr04
+Job ID: 20123075
+GPU info:
+Sun Aug  9 05:58:54 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.126.20             Driver Version: 580.126.20     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H200                    On  |   00000000:46:00.0 Off |                    0 |
+| N/A   31C    P0             74W /  700W |     117MiB / 143771MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            8172      G   /usr/lib/xorg/Xorg                      107MiB |
++-----------------------------------------------------------------------------------------+
+CUDA available: True
+Device: NVIDIA H200
+Resuming from checkpoint: outputs/flowers_mesh_cylinder_20260808_004723/checkpoints/epoch_15.pt
+data:
+  name: cylinder
+  root: data/cylinder_flow
+  norm_stats_path: data/cylinder_flow/torch/norm_stats.pt
+  batch_size: 8
+  num_workers: 8
+  train_in_memory: true
+  valid_in_memory: true
+  test_in_memory: true
+  max_train_trajectories: null
+  max_valid_trajectories: null
+  max_test_trajectories: null
+  train_noise_std: 0.02
+  train_noise_gamma: 1.0
+model:
+  name: flowers_mesh
+  net:
+    _target_: flowers_gnn.models.flowers_mesh.FlowersMesh
+    latent_dim: 256
+    num_blocks: 4
+    num_heads: 4
+    k_interp: 3
+train:
+  epochs: 30
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 0.0001
+    weight_decay: 0.0001
+  lr_scheduler:
+    warmup_epochs: 1
+    eta_min_factor: 0.1
+  rollout:
+    horizons:
+    - 1
+    - 10
+    - 20
+    - 50
+    - 100
+    - 200
+    max_trajectories: 32
+    eval_every_n_epochs: 1
+  checkpoint:
+    save_every_n_epochs: 1
+    keep_last: 3
+resume_from: outputs/flowers_mesh_cylinder_20260808_004723/checkpoints/epoch_15.pt
+experiment:
+  name: ${model.name}_${data.name}
+  seed: 42
+  project: flowers-gn
+  wandb_mode: online
+device: auto
+output_dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
+
+Using device: cuda
+Model flowers_mesh: 2,120,226 params
+Resuming from checkpoint: outputs/flowers_mesh_cylinder_20260808_004723/checkpoints/epoch_15.pt
+  Resumed at epoch 15, best_val_loss=0.007910
+  Will continue from epoch 16
+[epoch 16] train loss 0.006445  (9376.2s)
+[epoch 16] valid loss 0.007910
+[epoch 16] rollout: rmse_1_steps=0.0029, rmse_10_steps=0.0065, rmse_20_steps=0.0089, rmse_50_steps=0.0137, rmse_100_steps=0.0201, rmse_200_steps=0.0377
+[epoch 17] train loss 0.006245  (9345.0s)
+[epoch 17] valid loss 0.007773
+[epoch 17] rollout: rmse_1_steps=0.0034, rmse_10_steps=0.0070, rmse_20_steps=0.0096, rmse_50_steps=0.0149, rmse_100_steps=0.0220, rmse_200_steps=0.0406
+[epoch 18] train loss 0.006047  (9393.8s)
+[epoch 18] valid loss 0.007762
+[epoch 18] rollout: rmse_1_steps=0.0030, rmse_10_steps=0.0064, rmse_20_steps=0.0088, rmse_50_steps=0.0141, rmse_100_steps=0.0210, rmse_200_steps=0.0394
+[epoch 19] train loss 0.005879  (9331.4s)
+[epoch 19] valid loss 0.007473
+[epoch 19] rollout: rmse_1_steps=0.0034, rmse_10_steps=0.0057, rmse_20_steps=0.0077, rmse_50_steps=0.0121, rmse_100_steps=0.0176, rmse_200_steps=0.0302
+[epoch 20] train loss 0.005738  (9253.0s)
+[epoch 20] valid loss 0.007809
+[epoch 20] rollout: rmse_1_steps=0.0027, rmse_10_steps=0.0065, rmse_20_steps=0.0090, rmse_50_steps=0.0139, rmse_100_steps=0.0200, rmse_200_steps=0.0352
+[epoch 21] train loss 0.005619  (9310.9s)
+[epoch 21] valid loss 0.007473
+[epoch 21] rollout: rmse_1_steps=0.0026, rmse_10_steps=0.0057, rmse_20_steps=0.0078, rmse_50_steps=0.0128, rmse_100_steps=0.0191, rmse_200_steps=0.0334
+[epoch 22] train loss 0.005488  (9301.1s)
+[epoch 22] valid loss 0.007323
+[epoch 22] rollout: rmse_1_steps=0.0026, rmse_10_steps=0.0055, rmse_20_steps=0.0076, rmse_50_steps=0.0122, rmse_100_steps=0.0176, rmse_200_steps=0.0297
+[epoch 23] train loss 0.005378  (9355.5s)
+[epoch 23] valid loss 0.007303
+[epoch 23] rollout: rmse_1_steps=0.0027, rmse_10_steps=0.0053, rmse_20_steps=0.0073, rmse_50_steps=0.0118, rmse_100_steps=0.0176, rmse_200_steps=0.0336
