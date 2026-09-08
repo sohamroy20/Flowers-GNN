@@ -30,7 +30,7 @@ python -c "import torch; print('CUDA available:', torch.cuda.is_available()); pr
 
 # Auto-resume: finding the latest checkpoint from any previous flowers_mesh_cylinder run
 LATEST_CKPT=""
-CKPT_DIR=$(ls -td outputs/flowers_mesh_cylinder_* 2>/dev/null | head -1 || true)
+CKPT_DIR=$(ls -td outputs/flowers_mesh_v2_cylinder_* 2>/dev/null | head -1 || true)
 if [ -n "$CKPT_DIR" ] && [ -d "$CKPT_DIR/checkpoints" ]; then
     LATEST_CKPT=$(ls -t "$CKPT_DIR/checkpoints"/epoch_*.pt 2>/dev/null | head -1 || true)
 fi

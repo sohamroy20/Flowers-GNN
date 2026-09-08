@@ -34,3 +34,5 @@ EOFlogs/
 outputs_archive/
 outputs_smoke/
 *.save
+artifacts/
+*.bak3

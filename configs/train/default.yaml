@@ -24,4 +24,4 @@ rollout:
 # Checkpointing
 checkpoint:
   save_every_n_epochs: 1
-  keep_last: 3
+  keep_last: 40
