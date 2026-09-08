@@ -47,6 +47,7 @@ class FlowersMesh(nn.Module):
         num_blocks: int = 8,
         num_heads: int = 8,
         k_interp: int = 3,
+	max_disp: float = 0.5,
     ):
         super().__init__()
 
@@ -63,6 +64,7 @@ class FlowersMesh(nn.Module):
                 latent_dim=latent_dim,
                 num_heads=num_heads,
                 k_interp=k_interp,
+		max_disp=max_disp,
             )
             for _ in range(num_blocks)
         ])

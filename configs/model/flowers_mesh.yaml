@@ -1,6 +1,8 @@
-# Native-mesh FLOWERS (thesis contribution).
+# Native-mesh FLOWERS v2 (thesis contribution).
+# 4 blocks x 32 heads, head_dim 8. Selected from the architecture scaling
+# study: heads vectorize cheaply, blocks are the runtime bottleneck.
 
-name: flowers_mesh
+name: flowers_mesh_v3
 
 net:
   _target_: flowers_gnn.models.flowers_mesh.FlowersMesh
@@ -8,3 +10,4 @@ net:
   num_blocks: 4
   num_heads: 32
   k_interp: 3
+  max_disp: 0.5

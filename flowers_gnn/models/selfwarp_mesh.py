@@ -138,6 +138,7 @@ class SelfWarpMesh(nn.Module):
         latent_dim: int,
         num_heads: int = 4,
         k_interp: int = 3,
+        max_disp: float = 0.5,
     ):
         super().__init__()
         if latent_dim % num_heads != 0:
@@ -148,12 +149,16 @@ class SelfWarpMesh(nn.Module):
         self.num_heads = num_heads
         self.head_dim = latent_dim // num_heads
         self.k_interp = k_interp
-
+        self.max_disp = max_disp
         self.norm_pre_warp = nn.LayerNorm(latent_dim)
         self.value_head = MLP(latent_dim, latent_dim, latent_dim)
         self.flow_head = MLP(latent_dim, latent_dim, num_heads * 2)
         self.out_proj = nn.Linear(latent_dim, latent_dim)
-
+        # Start as an identity warp: displacements begin at zero and the model
+        # learns to reach outward, rather than starting scattered and having to
+        # find its way back.
+        nn.init.zeros_(self.flow_head.net[-1].weight)
+        nn.init.zeros_(self.flow_head.net[-1].bias)
         self.norm_pre_ffn = nn.LayerNorm(latent_dim)
         self.ffn = MLP(latent_dim, latent_dim * 2, latent_dim)
 
@@ -169,6 +174,16 @@ class SelfWarpMesh(nn.Module):
         v = self.value_head(x)
         flow = self.flow_head(x).view(-1, self.num_heads, 2)
         v_heads = v.view(-1, self.num_heads, self.head_dim)
+
+        # Bound displacements to a fraction of the domain. Without this the flow
+        # head is unconstrained, and query points that land outside the mesh get
+        # no useful gradient (the same distant nodes stay nearest however far you
+        # push), so early blocks can settle into a degenerate far-field regime.
+        # Scaling by the per-graph extent keeps max_disp dataset-independent.
+        with torch.no_grad():
+            extent = (pos.max(dim=0).values - pos.min(dim=0).values).max()
+        flow = torch.tanh(self.flow_head(x)).view(-1, self.num_heads, 2)
+        flow = flow * (self.max_disp * extent)
 
        # warped_heads = []
        # for h_idx in range(self.num_heads):
