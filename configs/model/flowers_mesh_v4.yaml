@@ -1,0 +1,12 @@
+# Native-mesh FLOWERS v4: v3 (bounded warp, zero-init flow head) at 64 heads.
+# Head-count ablation against v3's 32 heads. head_dim 4 vs 8.
+
+name: flowers_mesh_v4
+
+net:
+  _target_: flowers_gnn.models.flowers_mesh.FlowersMesh
+  latent_dim: 256
+  num_blocks: 4
+  num_heads: 64
+  k_interp: 3
+  max_disp: 0.5

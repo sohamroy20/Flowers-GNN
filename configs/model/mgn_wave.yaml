@@ -1,0 +1,7 @@
+name: mgn_wave_v1
+net:
+  _target_: flowers_gnn.models.mgn.MGN
+  latent_size: 128
+  num_mp_steps: 15
+  n_fields: 1
+  use_node_type: false

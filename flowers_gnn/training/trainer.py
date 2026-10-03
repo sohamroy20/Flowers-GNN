@@ -119,12 +119,11 @@ class Trainer:
         (self.output_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
 
         # Rollout support: eager-loaded valid trajectories for rollout eval
-        self.rollout_dataset = CylinderFlowDataset(
-            root=cfg.data.root,
-            split="valid",
-            in_memory=True,
-            max_trajectories=cfg.train.rollout.max_trajectories,
-        )
+        rollout_cfg = OmegaConf.merge(cfg.data, {
+            "max_valid_trajectories": cfg.train.rollout.max_trajectories,
+            "valid_in_memory": True,
+        })
+        self.rollout_dataset = CylinderDataModule(rollout_cfg).valid_dataset()
 
         # Bookkeeping
         #self.best_val_loss = float("inf")
@@ -195,12 +194,18 @@ class Trainer:
         max_steps = max(horizons)
 
         all_metrics: Dict[str, List[float]] = {}
-        for i in range(len(self.rollout_dataset.traj_paths)):
-            traj_blob = torch.load(self.rollout_dataset.traj_paths[i], weights_only=True)
-            traj = {"velocity": traj_blob["velocity"].float()}
-            # get(idx=0 of this traj) gives us the static fields for this specific traj
-            first_frame_idx = self.rollout_dataset._cum_offsets[i]
-            static = self.rollout_dataset.get(first_frame_idx)
+        is_rigno = hasattr(self.rollout_dataset, "trajectory")
+        n_traj = (self.rollout_dataset.n_traj if is_rigno
+                  else len(self.rollout_dataset.traj_paths))
+        for i in range(n_traj):
+            if is_rigno:
+                traj = self.rollout_dataset.trajectory(i)
+                static = self.rollout_dataset.static()
+            else:
+                traj_blob = torch.load(self.rollout_dataset.traj_paths[i], weights_only=True)
+                traj = {"velocity": traj_blob["velocity"].float()}
+                first_frame_idx = self.rollout_dataset._cum_offsets[i]
+                static = self.rollout_dataset.get(first_frame_idx)
 
             out = rollout_trajectory(
                 model=self.model,

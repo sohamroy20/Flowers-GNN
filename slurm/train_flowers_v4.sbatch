@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=flowers_cylinder
+#SBATCH --job-name=flowers_v4
 #SBATCH --qos=h200-1day
 #SBATCH --partition=h200
 #SBATCH --gres=gpu:h200:1
 #SBATCH --cpus-per-task=12
 #SBATCH --mem=128G
 #SBATCH --time=23:00:00
-#SBATCH --output=logs/flowers.%j.out
-#SBATCH --error=logs/flowers.%j.err
+#SBATCH --output=logs/flowers_v4.%j.out
+#SBATCH --error=logs/flowers_v4.%j.err
 
 set -euo pipefail
 
@@ -30,7 +30,7 @@ python -c "import torch; print('CUDA available:', torch.cuda.is_available()); pr
 
 # Auto-resume: finding the latest checkpoint from any previous flowers_mesh_cylinder run
 LATEST_CKPT=""
-CKPT_DIR=$(ls -td outputs/flowers_mesh_v3_cylinder_* 2>/dev/null | head -1 || true)
+CKPT_DIR=$(ls -td outputs/flowers_mesh_v4_cylinder_* 2>/dev/null | head -1 || true)
 if [ -n "$CKPT_DIR" ] && [ -d "$CKPT_DIR/checkpoints" ]; then
     LATEST_CKPT=$(ls -t "$CKPT_DIR/checkpoints"/epoch_*.pt 2>/dev/null | head -1 || true)
 fi
@@ -44,7 +44,7 @@ else
 fi
 
 python -u train.py \
-    model=flowers_mesh \
+    model=flowers_mesh_v4 \
     train.epochs=30 \
     data.batch_size=8 \
     data.num_workers=8 \

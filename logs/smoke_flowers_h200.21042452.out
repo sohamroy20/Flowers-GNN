@@ -76,3 +76,5 @@ output_dir: outputs/${experiment.name}_${now:%Y%m%d_%H%M%S}
 Using device: cuda
 Model flowers_mesh: 2,177,794 params
 [epoch 1] train loss 0.092792  (560.3s)
+[epoch 1] valid loss 0.463529
+[epoch 1] rollout: rmse_1_steps=0.0411, rmse_10_steps=0.0848, rmse_20_steps=0.0980, rmse_50_steps=0.1080, rmse_100_steps=0.1196, rmse_200_steps=0.1706

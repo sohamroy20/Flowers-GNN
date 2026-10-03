@@ -43,17 +43,21 @@ class FlowersMesh(nn.Module):
 
     def __init__(
         self,
-        latent_dim: int = 192,
-        num_blocks: int = 8,
-        num_heads: int = 8,
+        latent_dim: int = 256,
+        num_blocks: int = 4,
+        num_heads: int = 32,
         k_interp: int = 3,
-	max_disp: float = 0.5,
+        max_disp: float = 0.5,
+        n_fields: int = 2,
+        use_node_type: bool = True,
     ):
         super().__init__()
 
         # Input features match MGN's node inputs: [velocity, one_hot(node_type)]
-        self.node_in_dim = 2 + NodeType.SIZE   # velocity(2) + node_type OH(9) = 11
-        self.output_size = 2                   # velocity delta
+        self.n_fields = n_fields
+        self.use_node_type = use_node_type
+        self.node_in_dim = n_fields + (NodeType.SIZE if use_node_type else 0)
+        self.output_size = n_fields            # per-field delta
 
         # Lift 11 -> latent_dim
         self.lift = nn.Linear(self.node_in_dim, latent_dim)
@@ -64,7 +68,7 @@ class FlowersMesh(nn.Module):
                 latent_dim=latent_dim,
                 num_heads=num_heads,
                 k_interp=k_interp,
-		max_disp=max_disp,
+                max_disp=max_disp,
             )
             for _ in range(num_blocks)
         ])
@@ -75,10 +79,11 @@ class FlowersMesh(nn.Module):
     def forward(self, batch: Batch) -> torch.Tensor:
         """Batch in, [total_N, 2] predicted normalized velocity delta out."""
         #Build initial node features
-        node_type_oh = F.one_hot(
-            batch.node_type.long(), num_classes=NodeType.SIZE
-        ).float()
-        node_feats = torch.cat([batch.x, node_type_oh], dim=-1)   # [N, 11]
+        if self.use_node_type:
+            oh = F.one_hot(batch.node_type.long(), num_classes=NodeType.SIZE).float()
+            node_feats = torch.cat([batch.x, oh], dim=-1)
+        else:
+            node_feats = batch.x
 
         #Lift
         h = self.lift(node_feats)                                 # [N,latent_dim]

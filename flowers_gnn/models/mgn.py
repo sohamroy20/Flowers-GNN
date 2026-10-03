@@ -32,13 +32,17 @@ class MGN(nn.Module):
         self,
         latent_size: int = 128,
         num_mp_steps: int = 15,
+        n_fields: int = 2,
+        use_node_type: bool = True,
     ):
         super().__init__()
 
         # Feature dimensions are fixed by the CylinderFlow representation.
-        self.node_in_dim = 2 + NodeType.SIZE   # velocity(2) + node_type one-hot(9) = 11
+        self.n_fields = n_fields
+        self.use_node_type = use_node_type
+        self.node_in_dim = n_fields + (NodeType.SIZE if use_node_type else 0)
         self.edge_in_dim = 3                   # rel_pos(2) + norm(1) = 3
-        self.output_size = 2                   # velocity delta
+        self.output_size = n_fields            # per-field delta
 
         self.core = EncodeProcessDecode(
             node_in_dim=self.node_in_dim,
@@ -53,8 +57,11 @@ class MGN(nn.Module):
         # ---- Node features ----
         # batch.x is normalized velocity, shape [total_N, 2].
         # node_type is [total_N] long; one-hot to [total_N, NodeType.SIZE].
-        node_type_oh = F.one_hot(batch.node_type.long(), num_classes=NodeType.SIZE).float()
-        node_feats = torch.cat([batch.x, node_type_oh], dim=-1)   # [total_N, 11]
+        if self.use_node_type:
+            oh = F.one_hot(batch.node_type.long(), num_classes=NodeType.SIZE).float()
+            node_feats = torch.cat([batch.x, oh], dim=-1)
+        else:
+            node_feats = batch.x
 
         # ---- Edge features ----
         # edge_index shape [2, total_E], row 0 senders, row 1 receivers.

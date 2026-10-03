@@ -11,6 +11,7 @@ from omegaconf import DictConfig
 from torch_geometric.loader import DataLoader
 
 from flowers_gnn.data.cylinder_dataset import CylinderFlowDataset
+from flowers_gnn.data.rigno_dataset import RignoDataset
 
 
 class CylinderDataModule:
@@ -18,6 +19,7 @@ class CylinderDataModule:
 
     def __init__(self, cfg: DictConfig):
         self.cfg = cfg
+        self.kind = cfg.get('_dataset_', 'cylinder')
         self.root = Path(cfg.root)
 
         # Load precomputed stats
@@ -29,29 +31,32 @@ class CylinderDataModule:
             )
         self.stats = torch.load(stats_path, weights_only=True)
 
-    def train_dataset(self) -> CylinderFlowDataset:
+    def _make(self, split, in_memory, max_traj):
+        if self.kind == 'rigno':
+            return RignoDataset(
+                nc_path=self.cfg.nc_path,
+                split=split,
+                knn_k=self.cfg.knn_k,
+                max_trajectories=max_traj,
+            )
         return CylinderFlowDataset(
             root=self.root,
-            split="train",
-            in_memory=self.cfg.train_in_memory,
-            max_trajectories=self.cfg.max_train_trajectories,
+            split=split,
+            in_memory=in_memory,
+            max_trajectories=max_traj,
         )
 
-    def valid_dataset(self) -> CylinderFlowDataset:
-        return CylinderFlowDataset(
-            root=self.root,
-            split="valid",
-            in_memory=self.cfg.valid_in_memory,
-            max_trajectories=self.cfg.max_valid_trajectories,
-        )
+    def train_dataset(self):
+        return self._make("train", self.cfg.train_in_memory,
+                          self.cfg.max_train_trajectories)
 
-    def test_dataset(self) -> CylinderFlowDataset:
-        return CylinderFlowDataset(
-            root=self.root,
-            split="test",
-            in_memory=self.cfg.test_in_memory,
-            max_trajectories=self.cfg.max_test_trajectories,
-        )
+    def valid_dataset(self):
+        return self._make("valid", self.cfg.valid_in_memory,
+                          self.cfg.max_valid_trajectories)
+
+    def test_dataset(self):
+        return self._make("test", self.cfg.test_in_memory,
+                          self.cfg.max_test_trajectories)
 
     def train_loader(self) -> DataLoader:
         return DataLoader(
